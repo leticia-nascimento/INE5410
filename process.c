@@ -3,10 +3,11 @@
 
 
 int main (int argc, char **argv) {
-    
-    fork();
+    pird_t pid = fork();
 
-    printf("Novo processo criado!\n");
+    if (pid >= 0) {
+      printf("Novo processo criado!\n");
+     }
     
     return 0;
 }
