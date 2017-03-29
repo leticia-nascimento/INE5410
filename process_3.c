@@ -30,6 +30,6 @@ int main (int argc, char **argv) {
               }
         }
     }
-    while (1){}
+    //while (1){}
     while (wait(NULL) != -1);
 }
