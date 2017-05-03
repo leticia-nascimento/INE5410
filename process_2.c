@@ -8,7 +8,7 @@
 * "Processo pai XX criou YY", onde XX é o PID do pai e YY o PID do filho.
 * Além disso, os processos filhos deverão imprimir na tela "Processo filho XX",
 * onde XX é o PID do filho. Dica: Utilize a função getpid() para retornar o PID 
-* do processo concorrente. 
+* do processo corrente. 
 */
 
 int main (int argc, char **argv) {
