@@ -18,6 +18,7 @@ int main(int argc, char *argv[]) {
 
   double *c = (double *) malloc (sizeof(double) * SIZE);
 
+
   for (i = 0; i < SIZE; i++) {
     c[i] = sqrt(i*  32) + sqrt(i * 16 + i * 8) + sqrt(i * 4 + i * 2 + i);
     c[i] -= sqrt(i * 32 * i * 16 + i * 4 + i * 2 + i);
