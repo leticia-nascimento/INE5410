@@ -29,7 +29,7 @@ int main (int argc, char *argv[]) {
 	} else {
 		MPI_Recv(NULL, 0, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		ranks[rank] = rank;
-		MPI_Send(&ranks, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+		MPI_Send(&ranks, size, MPI_INT, 0, 0, MPI_COMM_WORLD);
 	}
 
 	MPI_Barrier(MPI_COMM_WORLD);
