@@ -13,23 +13,24 @@
 
 int main (int argc, char *argv[]) {
 	int size, rank;
+	int flag = 0;
 
 	MPI_Init(&argc,	&argv); //	inicializa o ambiente MPI
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-	int ranks[size];
-
 	if (rank == 0) {
 		for (int i = 1; i < size; i++) {
 			MPI_Send(NULL, 0, MPI_INT, i, 0, MPI_COMM_WORLD);
-			MPI_Recv(&ranks, size, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			printf("Message received from process %d\n", ranks[i]);
+		}
+		while (flag < size-1) {
+			MPI_Recv(&rank, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			printf("Message received from process %d\n", rank);
+			flag++;
 		}
 	} else {
-		MPI_Recv(NULL, 0, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-		ranks[rank] = rank;
-		MPI_Send(&ranks, size, MPI_INT, 0, 0, MPI_COMM_WORLD);
+		MPI_Recv(NULL, 0, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		MPI_Send(&rank, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
 	}
 
 	MPI_Barrier(MPI_COMM_WORLD);
