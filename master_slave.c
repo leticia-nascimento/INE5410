@@ -28,6 +28,7 @@ int main (int argc, char *argv[]) {
 			printf("Message received from process %d\n", rank);
 			flag++;
 		}
+		rank = 0;
 	} else {
 		MPI_Recv(NULL, 0, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		MPI_Send(&rank, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
