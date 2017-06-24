@@ -59,8 +59,8 @@ int adjacent_to (int size, int i, int j) {
 
 void play (int size, int start, int end) {
   int	i, j, a, c;
-  /* for each cell, apply the rules of Life */
 
+  /* for each cell, apply the rules of Life */
   for (c=start; c<end; ++c) {
     i = c%size + 1;
     j = c/size + 1;
@@ -132,21 +132,26 @@ void* processWork(&argc, &argv, size, steps) {
     // Calcula células que serão atualizadas por cada processo
     for(int i = 0; i < numPro; i++) {
       proRange = size*size/ranks[i];
-      int start = ranks[i]* proRange;
+      int start = ranks[i]*proRange;
       int end = start + proRange;
         if (ranks[i] == numPro - 1) {
           end += (size*size)%size;
         }
-        MPI_Send(NULL, 0, MPI_INT, i, 0, MPI_COMM_WORLD);
+        int msg[2] = {start, end};
+        MPI_Send(&msg, 2, MPI_INT, i, 0, MPI_COMM_WORLD);
     }
   }
 
   ranks[numPro] = rank;
 
-  int s = 0;
+  MPI_Recv(&msg, 2, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+  // int s = 0;
   while (currentStep < steps) {
-    s = 0;
-    play (size, start, end);  
+    // s = 0;
+    play (size, msg[0], msg[1]);
+
+    MPI_Send(msg, 2, MPI_INT, rank[i+1], 0, MPI_COMM_WORLD);  // processo envia linha anterior e sucessor
 
     // apenas um processo atualiza e imprime o tabuleiro novo
     if (rank[i] == numPro) {
@@ -160,6 +165,7 @@ void* processWork(&argc, &argv, size, steps) {
       currentStep++;
     }
   }
+  MPI_Barrier(MPI_COMM_WORLD);
   MPI_Finalize();
 }
 
