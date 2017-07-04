@@ -17,8 +17,6 @@
 #include <stdlib.h>
 #include <mpi.h>
 
-#define DOGGO 1000
-
 typedef unsigned char cell_t;
 
 int size, steps;
@@ -59,14 +57,6 @@ int adjacent_to (cell_t* board, int size, int i, int j) {
   count+=board[ek + j];
   count+=board[ek + el];
   
-  if (rank == DOGGO) {
-    if (count != 0) {
-      printf("r%d size%d i%d j%d\n", rank, size, i, j);
-      printf("sk%d ek%d sl%d el%d\n", sk, ek, sl, el);
-      printf("count%d\n", count);
-    }
-  }
-
   return count;
 }
 
@@ -241,14 +231,6 @@ void MasterWork() {
     tmp = next;
     next = prev;
     prev = tmp;
-
-    // Avisa todos os processos para terminarem
-    if (i == (steps-1)) {
-      for (id = 1; id < nprocs; id++) {
-        MPI_Send(NULL, 0, MPI_INT, id, MT_FINISH, MPI_COMM_WORLD);
-        //printf("master sent MT_FINISH id %d\n", id);
-      }
-    }
   }
 
   #ifdef RESULT
@@ -297,13 +279,7 @@ void SlaveWork() {
     MPI_Recv(prev, quant, MPI_CHAR, 0, MT_INITIAL, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     //printf("r%d passou Recv.\n", rank);
     // Calcula a iteração
-    if (rank == DOGGO) {
-      printpart(prev,newsize, (quant/newsize), i+1, 1 );
-    }
     play(prev, next, newsize, (quant/newsize) );
-    if (rank == DOGGO) {
-      printpart(next,newsize, (quant/newsize), i+1, 0 );
-    }
     // Envia apenas as linhas válidas (sem a primeira e a ultima)
     MPI_Send((next+newsize), (quant-newsize*2), MPI_CHAR, 0, MT_RESULT, MPI_COMM_WORLD);
     //printf("r%d passou Send.\n", rank);
