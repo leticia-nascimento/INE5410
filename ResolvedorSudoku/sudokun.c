@@ -34,7 +34,7 @@ void convert(int size, int buf[]) {
             grid[i][j] = buf[i * (size*size) + j];
         }
     }
-    print();
+    solve(0,0);
 }
 
 // checks if a number belongs to a cell
@@ -66,7 +66,7 @@ void solve(int row, int column) {
     if (row == rows) {
         print();
     } else {
-        for (number = 1; number <= 9; number++) {
+        for (number = 1; number <= rows; number++) {
             if (check(row, column, number)) {
                 attempt = grid[row][column];
                 grid[row][column] = number;
