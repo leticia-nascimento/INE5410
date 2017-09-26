@@ -9,6 +9,8 @@
 
 #define MAX_n 8
 
+pthread_mutex_t mutex;
+pthread_mutex_t mutex2;
 int nThreads = 4;
 
 int **grid;
@@ -93,47 +95,40 @@ void solve(int row, int column) {
 }
 
 void* thrWork(void *ide) {
-    // int* id = (int*)ide;
-    int id = atoi(ide);
-    printf("%d\n", id);
-    // int id = (int) arg;
-    int row, column;
-    int row2, column2;
+    // int id = atoi(ide);
+    // printf("%d\n", id);
 
-    // printf("%s\n", id );
+    pthread_mutex_lock(&mutex2);
 
     // create new grid for all threads
     int **newGrid = (int**)malloc(sizeof(int*)*rows);
-    for (int k = 0; k < rows; k++)
-        newGrid[k] = (int*)malloc(sizeof(int)*columns);
-    for (row = 0; row < rows; row++) {
-        for (column = 0; column < columns; column++) {
-            newGrid[row][column] = grid[row][column];
+    for (int i = 0; i < rows; i++){
+        newGrid[i] = (int*)malloc(sizeof(int)*columns);
     }
 
-    // find 0
-    if(0 == 0) {
-        for (row2 = 0; row2 < rows; row2++) {
-            for (column2 = 0; column2 < columns; column2++) {
-                if(newGrid[row2][column2] == 0) {
-                    // printf("%d, %d \n", row2, column2);
-                    break;
-                }
-            //     printf (" %d",newGrid[row2][column2]);
-            //     // xx
-            //     if (column2 % columns == (columns - 1)) printf ("  ");
-            // }
-            // //xx
-            // printf ("\n");
-            // if (row2 % rows == (rows - 1)) printf ("\n");
-            }
+    for (int row = 0; row < rows; row++) {
+        for (int column = 0; column < columns; column++) {
+            newGrid[row][column] = grid[row][column];
         }
-        // printf("%d, %d \n", row2, column2);
     }
+
+    pthread_mutex_unlock(&mutex2);
+
+    pthread_mutex_lock(&mutex);
+
+    for (int row2 = 0; row2 < rows; row2++) {
+        for (int column2 = 0; column2 < columns; column2++) {
+            printf (" %d",newGrid[row2][column2]);
+            if (column2 % columns == (columns - 1)) printf ("  ");
+        }
+        printf ("\n");
+        if (row2 % rows == (rows - 1)) printf ("\n");
+    }
+
+    pthread_mutex_unlock(&mutex);  
 
     pthread_exit(NULL);
-    free_newGrid(newGrid);
-    }   
+    free_newGrid(newGrid); 
 }
 
 int main(int argc, char **argv) {
@@ -160,6 +155,7 @@ int main(int argc, char **argv) {
         }
     }
 
+    pthread_mutex_init(&mutex, NULL);
     rows = size*size;
     columns = size*size;
     allocate_grid();
@@ -178,6 +174,8 @@ int main(int argc, char **argv) {
     }
 
     free_grid();
+    pthread_mutex_destroy(&mutex);
+    pthread_mutex_destroy(&mutex2);
 }
 
 void print() {
@@ -188,10 +186,8 @@ void print() {
     for (row = 0; row < rows; row++) {
         for (column = 0; column < columns; column++) {
             printf (" %d",grid[row][column]);
-            // xx
             if (column % columns == (columns - 1)) printf ("  ");
         }
-        //xx
         printf ("\n");
         if (row % rows == (rows - 1)) printf ("\n");
     }
