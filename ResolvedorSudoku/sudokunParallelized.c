@@ -52,7 +52,7 @@ void convert(int size, int buf[]) {
 }
 
 // checks if a number belongs to a cell
-int check(int row, int column, int number) {
+int check(int row, int column, int number, int**grid[rows][columns]) {
     int square = (int)(sqrt(rows));
 
     if (grid[row][column] == number) return 1;
@@ -74,61 +74,62 @@ int check(int row, int column, int number) {
     return 1;
 }
 
-void solve(int row, int column) {
+void solve(int row, int column, int **newgrid) {
+    int static n = 0;
+
+    if (n < nThreads) {
+        n++;
+
+        pthread_mutex_lock(&mutex2);
+
+        int **newGrid[rows][columns];
+
+        // create new grid for all threads
+        newGrid = (int**)malloc(sizeof(int*)*rows);
+        for (int i = 0; i < rows; i++){
+            newGrid[i] = (int*)malloc(sizeof(int)*columns);
+        }
+
+        for (int row = 0; row < rows; row++) {
+            for (int column = 0; column < columns; column++) {
+                newGrid[row][column] = grid[row][column];
+            }
+        }
+    }
+
+    int* args = malloc(sizeof(int)*4);
+    args[0] = 0;
+    args[1] = 0;
+    args[2] = newGrid[rows][columns];
+
+    pthread_t thread;
+    pthread_create(&thread, NULL, solve, (void*) args);
+    pthread_join(thread, NULL);
+
+    pthread_mutex_unlock(&mutex2);
+
     int number, attempt;
 
     if (row == rows) {
         print();
     } else {
         for (number = 1; number <= rows; number++) {
-            if (check(row, column, number)) {
-                attempt = grid[row][column];
-                grid[row][column] = number;
+            if (check(row, column, number, newGrid[rows][columns])) {
+                attempt = newgrid[row][column];
+                newGrid[row][column] = number;
                 if (column == columns - 1)
-                    solve(row + 1, 0);
+                    solve(row + 1, 0, newGrid[rows][columns]);
                 else
-                    solve(row, column + 1);
-                grid[row][column] = attempt;
+                    solve(row, column + 1, newGrid[rows][columns]);
+                newGrid[row][column] = attempt;
             }
         }
     }
-}
 
-void* thrWork(void *ide) {
-    // int id = atoi(ide);
-    // printf("%d\n", id);
-
-    pthread_mutex_lock(&mutex2);
-
-    // create new grid for all threads
-    int **newGrid = (int**)malloc(sizeof(int*)*rows);
-    for (int i = 0; i < rows; i++){
-        newGrid[i] = (int*)malloc(sizeof(int)*columns);
-    }
-
-    for (int row = 0; row < rows; row++) {
-        for (int column = 0; column < columns; column++) {
-            newGrid[row][column] = grid[row][column];
-        }
-    }
-
-    pthread_mutex_unlock(&mutex2);
-
-    pthread_mutex_lock(&mutex);
-
-    for (int row2 = 0; row2 < rows; row2++) {
-        for (int column2 = 0; column2 < columns; column2++) {
-            printf (" %d",newGrid[row2][column2]);
-            if (column2 % columns == (columns - 1)) printf ("  ");
-        }
-        printf ("\n");
-        if (row2 % rows == (rows - 1)) printf ("\n");
-    }
-
-    pthread_mutex_unlock(&mutex);  
-
-    pthread_exit(NULL);
-    free_newGrid(newGrid); 
+    // if(done()) {
+    //     pthread_exit(NULL);
+    // free_newGrid(newGrid);
+    // }
 }
 
 int main(int argc, char **argv) {
@@ -163,15 +164,6 @@ int main(int argc, char **argv) {
 
     //initialize threads
     pthread_t threads[nThreads];
-    int a;
-    for (a = 0; a < nThreads; a++) {
-        pthread_create(&threads[a], NULL, thrWork, (void*)threads[a]);
-    }
-
-    int b;
-    for (b = 0; b < nThreads; b++) {
-        pthread_join(threads[b], NULL);
-    }
 
     free_grid();
     pthread_mutex_destroy(&mutex);
