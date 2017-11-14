@@ -1,52 +1,54 @@
 #include <stdio.h>
 #include <math.h>
+ 
+#define bucketsize 100
 
+typedef struct {
+        int top;
+        int bucket[bucketsize];
+} bucket;
+ 
 void bucket_sort(int* v, int size, int nbuckets, float range);
-void quick_sort(int* v,int size);
+void quick_sort(int* v, int size);
 int maxValue(int* v, int size);                                                
 int minValue(int* v, int size);
 void initialize(int* v, int size);
 void print(int* v, int size);
-int** allocate_bucket(int nbuckets, int size);
-int* allocate_vector(int size);                                           
+int* allocate_vector(int size);                                                      
+                                                                 
+void bucket_sort(int v[],int size, int nbuckets, float range){                                     
+    bucket *b = malloc(sizeof(bucket)*nbuckets);
 
-// separa o vetor em buckets, e chama o bubble_sort para ordenar separadamente cada bucket
-void bucket_sort(int* v, int size, int nbuckets, float range) {
-    int** bucket = allocate_bucket(nbuckets, size);
+    int i,j,k;
 
-    int i,j,k,b;
+    for(i = 0; i < nbuckets; i++) 
+        b[i].top = 0;
+      
+    for (i = 0; i < size; ++i) {
+        j = (nbuckets)-1;
+        while(1) {
+                if(j < 0) break;
+                if(v[i]>=j*range){
+                        b[j].bucket[b[j].top]=v[i];
+                        (b[j].top)++;
+                        break;
+                        }
+                        j--;
+                }
+        }
 
-    // garantir que todos os buckets estejam vazios
-    for(i = 0; i < nbuckets; i++) {
-        for(j = 0; j < size; j++) {
-            bucket[i][j] = 0;
+    for (i = 0; i < nbuckets; i++) {
+        if(b[i].top)
+                quick_sort(b[i].bucket,b[i].top);
+     }
+
+    i = 0;
+    for (j = 0; j < nbuckets; +j++) {        
+        for(k = 0; k < b[j].top; k++){
+                v[i]=b[j].bucket[k];
+                i++;
         }
     }
-
-    printf("\n");
-    for(b = 0; b < nbuckets; b++) {
-        printf("Bucket: %d\n", b);
-        for(i = 0; i < size; i ++) {
-            printf("Numbers in this bucket: ");
-            int number = v[i];
-            float index = floor((v[i]-minValue(v, size)) / range);
-            printf("%.1lf\n", index);
-            bucket[b][(int)index] = number;
-            printf("%d\n", bucket[b][(int)index] = number);
-        }
-        printf("\n");
-    }
-
-    // for(i = 0; i < nbuckets; i++) {
-    //     for(j = 0; j < size; j++) {
-    //         if(v[])
-    //         int* b = allocate_vector();
-    //     }
-    // }
-
-    // for(i = 0; i < size; i++) {
-    //     quick_sort(bucket[i][], size);
-    // }
 }
 
 //quick sort para ordenar o vetor                                                              
@@ -63,8 +65,8 @@ void quick_sort(int *v, int size) {
         if (i >= j) break;
      
         int temp = v[i];
-        v[i]     = v[j];
-        v[j]     = temp;
+        v[i] = v[j];
+        v[j] = temp;
       }
      
       quick_sort(v, i);
@@ -72,7 +74,7 @@ void quick_sort(int *v, int size) {
 }
 
 // encontrar o maior valor de um vetor
-maxValue(int* v, int size) {
+int maxValue(int* v, int size) {
     int max = v[0];
 
     for (int i = 1; i < size; ++i) {
@@ -84,7 +86,7 @@ maxValue(int* v, int size) {
 }
 
 // encontrar o menor valor de um vetor
-minValue(int* v, int size) {
+int minValue(int* v, int size) {
     int min = v[0];
 
     for (int i = 1; i < size; ++i) {
@@ -119,15 +121,6 @@ int* allocate_vector(int size) {
     return vector;
 }
 
-//aloca memória para um bucket com um vetor de elementos
-int** allocate_bucket(int nbuckets, int size) {
-    int ** bucket = (int **) malloc(sizeof(int*)*nbuckets);
-    int i;
-    for (i = 0; i < size; i++)
-        bucket[i] = (int *) malloc(sizeof(int)*size);
-    return bucket;
-}
-
 int main(int argc, char* argv[]) {
         int size = atoi(argv[1]); // tamanho do vetor
         printf("Size: %d\n", size);
@@ -149,10 +142,10 @@ int main(int argc, char* argv[]) {
         float range = floor((maxValue(v, size) - minValue(v, size)) / nbuckets)+1;    
         printf("Range: %.1lf\n", range);
 
-        //bubble(v, size);
         bucket_sort(v, size, nbuckets, range);
 
         printf("\nAfter sorting:\n");
         print(v, size);
-}
 
+        return 0;
+}
